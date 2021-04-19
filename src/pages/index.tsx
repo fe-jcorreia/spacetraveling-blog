@@ -2,6 +2,8 @@ import { GetStaticProps } from 'next';
 import Head from 'next/head';
 import Link from 'next/link';
 
+import { format } from 'date-fns';
+import ptBR from 'date-fns/locale/pt-BR';
 import Prismic from '@prismicio/client';
 import { getPrismicClient } from '../services/prismic';
 
@@ -9,6 +11,7 @@ import { FiCalendar, FiUser } from 'react-icons/fi';
 import styles from './home.module.scss';
 import { useState } from 'react';
 import { postFormatter } from '../formatters/prismicResponseFormatter';
+import Header from '../components/Header';
 
 interface Post {
   uid?: string;
@@ -48,6 +51,9 @@ export default function Home({ postsPagination }: HomeProps) {
       <Head>
         <title>Home | SpaceTravelingBlog</title>
       </Head>
+
+      <Header />
+
       <main className={styles.container}>
         <div className={styles.posts}>
           {posts.map(post => (
@@ -56,9 +62,16 @@ export default function Home({ postsPagination }: HomeProps) {
                 <h1>{post.data.title}</h1>
                 <p>{post.data.subtitle}</p>
                 <div className={styles.postStatus}>
-                  <time style={{ textTransform: 'capitalize' }}>
+                  <time>
                     <FiCalendar />
-                    {'  ' + post.first_publication_date}
+                    {'  ' +
+                      format(
+                        new Date(post.first_publication_date),
+                        'dd MMM yyyy',
+                        {
+                          locale: ptBR,
+                        }
+                      )}
                   </time>
                   <p>
                     <FiUser />

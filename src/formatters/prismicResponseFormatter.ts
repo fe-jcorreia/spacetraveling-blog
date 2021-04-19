@@ -1,6 +1,3 @@
-import { format } from 'date-fns';
-import ptBR from 'date-fns/locale/pt-BR';
-
 interface Post {
   uid?: string;
   first_publication_date: string | null;
@@ -20,13 +17,7 @@ export function postFormatter(prismicResponse: PostPagination) {
   const posts = prismicResponse.results.map(post => {
     return {
       uid: post.uid,
-      first_publication_date: format(
-        new Date(post.first_publication_date),
-        'dd MMM yyyy',
-        {
-          locale: ptBR,
-        }
-      ),
+      first_publication_date: post.first_publication_date,
       data: {
         title: post.data.title,
         subtitle: post.data.subtitle,

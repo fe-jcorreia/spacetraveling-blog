@@ -12,6 +12,7 @@ import styles from './post.module.scss';
 import { RichText } from 'prismic-dom';
 import { useRouter } from 'next/router';
 import { Fragment, useMemo } from 'react';
+import Header from '../../components/Header';
 
 interface Post {
   first_publication_date: string | null;
@@ -59,15 +60,20 @@ export default function Post({ post }: PostProps) {
         <title>{post.data.title} | SpaceTravelingBlog</title>
       </Head>
 
+      <Header />
+
       <img className={styles.banner} src={post.data.banner.url} />
       <main className={styles.container}>
         <article className={styles.post}>
           <h1>{post.data.title}</h1>
 
           <section className={styles.postStatus}>
-            <time style={{ textTransform: 'capitalize' }}>
+            <time>
               <FiCalendar />
-              {'  ' + post.first_publication_date}
+              {'  ' +
+                format(new Date(post.first_publication_date), 'dd MMM yyyy', {
+                  locale: ptBR,
+                })}
             </time>
             <span>
               <FiUser />
@@ -116,15 +122,11 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
   const response = await prismic.getByUID('pos', String(slug), {});
 
   const post = {
-    first_publication_date: format(
-      new Date(response.first_publication_date),
-      'dd MMM yyyy',
-      {
-        locale: ptBR,
-      }
-    ),
+    first_publication_date: response.first_publication_date,
+    uid: response.uid,
     data: {
       title: response.data.title,
+      subtitle: response.data.subtitle,
       banner: response.data.banner,
       author: response.data.author,
       content: response.data.content.map(({ heading, body }) => {
