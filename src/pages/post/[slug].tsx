@@ -11,7 +11,7 @@ import commonStyles from '../../styles/common.module.scss';
 import styles from './post.module.scss';
 import { RichText } from 'prismic-dom';
 import { useRouter } from 'next/router';
-import { Fragment } from 'react';
+import { Fragment, useMemo } from 'react';
 
 interface Post {
   first_publication_date: string | null;
@@ -37,8 +37,20 @@ interface PostProps {
 export default function Post({ post }: PostProps) {
   const router = useRouter();
 
+  const reducer = (sumContent, thisContent) => {
+    const headingWords = thisContent.heading.split(/\s/g).length;
+    const bodyWords = thisContent.body.reduce((sumBody, thisBody) => {
+      const textWords = thisBody.text.split(/\s/g).length;
+
+      return sumBody + textWords;
+    }, 0);
+    return sumContent + headingWords + bodyWords;
+  };
+
+  const wordCount = post.data.content.reduce(reducer, 0);
+
   if (router.isFallback) {
-    return <div>Loading...</div>;
+    return <div>Carregando...</div>;
   }
 
   return (
@@ -47,24 +59,26 @@ export default function Post({ post }: PostProps) {
         <title>{post.data.title} | SpaceTravelingBlog</title>
       </Head>
 
+      <img className={styles.banner} src={post.data.banner.url} />
       <main className={styles.container}>
-        <img src={post.data.banner.url} />
         <article className={styles.post}>
           <h1>{post.data.title}</h1>
-          <div className={styles.postStatus}>
+
+          <section className={styles.postStatus}>
             <time style={{ textTransform: 'capitalize' }}>
               <FiCalendar />
               {'  ' + post.first_publication_date}
             </time>
-            <p>
+            <span>
               <FiUser />
               {'  ' + post.data.author}
-            </p>
-            <p>
-              <FiClock /> {'  '} 4 min
-            </p>
-          </div>
-          <div className={styles.content}>
+            </span>
+            <span>
+              <FiClock /> {'  '} {Math.ceil(wordCount / 200)} min
+            </span>
+          </section>
+
+          <section className={styles.content}>
             {post.data.content.map(({ heading, body }) => (
               <Fragment key={heading}>
                 <h2>{heading}</h2>
@@ -75,7 +89,7 @@ export default function Post({ post }: PostProps) {
                 />
               </Fragment>
             ))}
-          </div>
+          </section>
         </article>
       </main>
     </>
@@ -111,7 +125,7 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
     ),
     data: {
       title: response.data.title,
-      banner: response.data.banner.url,
+      banner: response.data.banner,
       author: response.data.author,
       content: response.data.content.map(({ heading, body }) => {
         return {
