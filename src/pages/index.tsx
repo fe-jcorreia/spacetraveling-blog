@@ -30,9 +30,10 @@ interface PostPagination {
 
 interface HomeProps {
   postsPagination: PostPagination;
+  preview: boolean;
 }
 
-export default function Home({ postsPagination }: HomeProps) {
+export default function Home({ postsPagination, preview }: HomeProps) {
   const [posts, setPosts] = useState(postsPagination.results);
   const [nextPage, setNextPage] = useState(postsPagination.next_page);
 
@@ -87,23 +88,47 @@ export default function Home({ postsPagination }: HomeProps) {
             ''
           )}
         </div>
+        <div className={styles.previewMode}>
+          <script
+            async
+            defer
+            src="https://static.cdn.prismic.io/prismic.js?new=true&repo=spacetravelingblg"
+          ></script>
+          {preview ? (
+            <aside>
+              <Link href="/api/exit-preview">
+                <a>Sair do modo Preview</a>
+              </Link>
+            </aside>
+          ) : (
+            <aside>
+              <Link href="/api/preview">
+                <a>Entrar no modo Preview</a>
+              </Link>
+            </aside>
+          )}
+        </div>
       </main>
     </>
   );
 }
 
-export const getStaticProps: GetStaticProps = async () => {
+export const getStaticProps: GetStaticProps<HomeProps> = async ({
+  preview = false,
+  previewData,
+}) => {
   const prismic = getPrismicClient();
   const postsResponse = await prismic.query(
     [Prismic.predicates.at('document.type', 'pos')],
     {
       pageSize: 2,
+      ref: previewData?.ref ?? null,
     }
   );
 
   const postsPagination = postFormatter(postsResponse);
 
   return {
-    props: { postsPagination },
+    props: { postsPagination, preview },
   };
 };

@@ -1,6 +1,6 @@
 .container {
   max-width: 980px;
-  margin: 5rem auto 0;
+  margin: 5rem auto 5rem;
   padding: 0 2rem;
 }
 
@@ -52,3 +52,21 @@
     }
   }
 }
+
+.previewMode {
+  display: flex;
+  justify-content: center;
+  max-width: 500px;
+  margin: 0 auto;
+  border: 1px solid var(--gray-700);
+  border-radius: 5px;
+  padding: 1.5rem;
+
+  a {
+    font-size: 1.25rem;
+    font-weight: 600;
+    background: transparent;
+    color: var(--pink-700);
+  }
+}
+

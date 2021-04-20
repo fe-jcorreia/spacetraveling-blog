@@ -7,12 +7,12 @@ import Prismic from '@prismicio/client';
 import PrismicDOM from 'prismic-dom';
 import { format } from 'date-fns';
 import ptBR from 'date-fns/locale/pt-BR';
-import commonStyles from '../../styles/common.module.scss';
 import styles from './post.module.scss';
-import { RichText } from 'prismic-dom';
 import { useRouter } from 'next/router';
-import { Fragment, useMemo } from 'react';
+import { Fragment } from 'react';
 import Header from '../../components/Header';
+import { UtterancesComments } from '../../components/UtterancesComments';
+import Link from 'next/link';
 
 interface Post {
   first_publication_date: string | null;
@@ -33,9 +33,10 @@ interface Post {
 
 interface PostProps {
   post: Post;
+  preview: boolean;
 }
 
-export default function Post({ post }: PostProps) {
+export default function Post({ post, preview }: PostProps) {
   const router = useRouter();
 
   const reducer = (sumContent, thisContent) => {
@@ -97,6 +98,31 @@ export default function Post({ post }: PostProps) {
             ))}
           </section>
         </article>
+
+        <div style={{ marginBottom: '3rem' }}>
+          <UtterancesComments />
+        </div>
+
+        <div className={styles.previewMode}>
+          <script
+            async
+            defer
+            src="https://static.cdn.prismic.io/prismic.js?new=true&repo=spacetravelingblg"
+          ></script>
+          {preview ? (
+            <aside>
+              <Link href="/api/exit-preview">
+                <a>Sair do modo Preview</a>
+              </Link>
+            </aside>
+          ) : (
+            <aside>
+              <Link href="/api/preview">
+                <a>Entrar no modo Preview</a>
+              </Link>
+            </aside>
+          )}
+        </div>
       </main>
     </>
   );
@@ -116,10 +142,23 @@ export const getStaticPaths: GetStaticPaths = async () => {
   };
 };
 
-export const getStaticProps: GetStaticProps = async ({ params }) => {
+export const getStaticProps: GetStaticProps = async ({
+  params,
+  preview = false,
+  previewData,
+}) => {
   const { slug } = params;
   const prismic = getPrismicClient();
   const response = await prismic.getByUID('pos', String(slug), {});
+
+  if (!response) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    };
+  }
 
   const post = {
     first_publication_date: response.first_publication_date,
@@ -139,7 +178,7 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
   };
 
   return {
-    props: { post },
+    props: { post, preview },
     revalidate: 60 * 30,
   };
 };
