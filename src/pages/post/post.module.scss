@@ -12,7 +12,7 @@
 .post {
   margin: 0 auto 5rem;
   color: var(--gray-100);
-  
+
   h1 {
     font-size: 3rem;
     margin-bottom: 1.5rem;
@@ -53,6 +53,19 @@
   }
 }
 
+.navPosts {
+  border-top: 1px solid var(--gray-700);
+  color: var(--pink-700);
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 5rem;
+  padding: 0 1rem;
+
+  a {
+    margin-top: 2rem;
+  }
+}
+
 .previewMode {
   display: flex;
   justify-content: center;
@@ -69,4 +82,3 @@
     color: var(--pink-700);
   }
 }
-

@@ -2,6 +2,26 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  /* Track */
+  ::-webkit-scrollbar-track {
+    background: var(--black-500);
+  }
+
+  /* Handle */
+  ::-webkit-scrollbar-thumb {
+    background: var(--gray-500);
+    border-radius: 10px;
+  }
+
+  /* Handle on hover */
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--gray-700);
+  }
 }
 
 :root {

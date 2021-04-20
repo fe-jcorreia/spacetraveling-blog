@@ -1,4 +1,4 @@
-import { GetStaticPaths, GetStaticProps } from 'next';
+import next, { GetStaticPaths, GetStaticProps } from 'next';
 import Head from 'next/head';
 import { FiCalendar, FiClock, FiUser } from 'react-icons/fi';
 
@@ -16,6 +16,7 @@ import Link from 'next/link';
 
 interface Post {
   first_publication_date: string | null;
+  last_publication_date: string | null;
   data: {
     title: string;
     banner: {
@@ -34,9 +35,16 @@ interface Post {
 interface PostProps {
   post: Post;
   preview: boolean;
+  previousPost: { uid?: string; title?: string };
+  nextPost: { uid?: string; title?: string };
 }
 
-export default function Post({ post, preview }: PostProps) {
+export default function Post({
+  post,
+  previousPost,
+  nextPost,
+  preview,
+}: PostProps) {
   const router = useRouter();
 
   const reducer = (sumContent, thisContent) => {
@@ -83,6 +91,16 @@ export default function Post({ post, preview }: PostProps) {
             <span>
               <FiClock /> {'  '} {Math.ceil(wordCount / 200)} min
             </span>
+            <span>
+              {'* editado em ' +
+                format(new Date(post.last_publication_date), 'dd MMM yyyy', {
+                  locale: ptBR,
+                }) +
+                ', às ' +
+                format(new Date(post.last_publication_date), 'HH:mm', {
+                  locale: ptBR,
+                })}
+            </span>
           </section>
 
           <section className={styles.content}>
@@ -98,6 +116,30 @@ export default function Post({ post, preview }: PostProps) {
             ))}
           </section>
         </article>
+
+        <div className={styles.navPosts}>
+          {previousPost.uid ? (
+            <Link href={`/post/${previousPost.uid}`}>
+              <a>
+                Previous Post <br />
+                {`${previousPost.title}`}
+              </a>
+            </Link>
+          ) : (
+            <a></a>
+          )}
+
+          {nextPost.uid ? (
+            <Link href={`/post/${nextPost.uid}`}>
+              <a>
+                Next Post <br />
+                {`${nextPost.title}`}
+              </a>
+            </Link>
+          ) : (
+            <a></a>
+          )}
+        </div>
 
         <div style={{ marginBottom: '3rem' }}>
           <UtterancesComments />
@@ -145,7 +187,6 @@ export const getStaticPaths: GetStaticPaths = async () => {
 export const getStaticProps: GetStaticProps = async ({
   params,
   preview = false,
-  previewData,
 }) => {
   const { slug } = params;
   const prismic = getPrismicClient();
@@ -162,6 +203,7 @@ export const getStaticProps: GetStaticProps = async ({
 
   const post = {
     first_publication_date: response.first_publication_date,
+    last_publication_date: response.last_publication_date,
     uid: response.uid,
     data: {
       title: response.data.title,
@@ -177,8 +219,41 @@ export const getStaticProps: GetStaticProps = async ({
     },
   };
 
+  const responsePreviousPost = (
+    await prismic.query(
+      Prismic.Predicates.dateBefore(
+        'document.first_publication_date',
+        response.first_publication_date
+      ),
+      { orderings: '[document.first_publication_date]' }
+    )
+  ).results.pop();
+  console.log(responsePreviousPost);
+
+  const responseNextPost = (
+    await prismic.query(
+      Prismic.Predicates.dateAfter(
+        'document.first_publication_date',
+        response.first_publication_date
+      ),
+      { orderings: '[document.first_publication_date]' }
+    )
+  ).results[0];
+
+  const previousPost = {
+    uid: responsePreviousPost?.uid ? responsePreviousPost.uid : '',
+    title: responsePreviousPost?.data.title
+      ? responsePreviousPost.data.title
+      : '',
+  };
+
+  const nextPost = {
+    uid: responseNextPost?.uid ? responseNextPost.uid : '',
+    title: responseNextPost?.data.title ? responseNextPost.data.title : '',
+  };
+
   return {
-    props: { post, preview },
+    props: { post, previousPost, nextPost, preview },
     revalidate: 60 * 30,
   };
 };
