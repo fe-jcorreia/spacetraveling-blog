@@ -121,7 +121,7 @@ export default function Post({
           {previousPost.uid ? (
             <Link href={`/post/${previousPost.uid}`}>
               <a>
-                Previous Post <br />
+                <strong>Previous Post</strong> <br />
                 {`${previousPost.title}`}
               </a>
             </Link>
@@ -132,7 +132,7 @@ export default function Post({
           {nextPost.uid ? (
             <Link href={`/post/${nextPost.uid}`}>
               <a>
-                Next Post <br />
+                <strong>Next Post</strong> <br />
                 {`${nextPost.title}`}
               </a>
             </Link>
@@ -228,7 +228,6 @@ export const getStaticProps: GetStaticProps = async ({
       { orderings: '[document.first_publication_date]' }
     )
   ).results.pop();
-  console.log(responsePreviousPost);
 
   const responseNextPost = (
     await prismic.query(
